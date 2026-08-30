@@ -1,0 +1,16 @@
+{
+  "name": "pilab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PiLab home-lab monitoring platform for Raspberry Pi projects.",
+  "packageManager": "pnpm@11.0.9",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @pilab/api --filter @pilab/dashboard dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
