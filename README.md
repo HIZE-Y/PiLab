@@ -58,11 +58,13 @@ The current implementation is:
 SimulatedMetricsProvider
 ```
 
-It generates realistic fake Raspberry Pi metrics locally. Later, a real implementation can be added:
+It generates realistic fake Raspberry Pi metrics locally. The future hardware implementation is already represented in code as a placeholder:
 
 ```text
 RaspberryPiMetricsProvider
 ```
+
+That placeholder intentionally throws for now because real Raspberry Pi system reads should be added only when the app is running on the Pi.
 
 Because the API depends on the `MetricsProvider` interface, the dashboard and REST endpoints do not need to change when the source changes from simulated data to real Raspberry Pi data.
 
@@ -117,6 +119,16 @@ The payload matches the shared `SystemMetrics` schema from `@pilab/shared`.
 
 - Node.js 22 or newer
 - pnpm 11 or newer
+
+### Configure Environment
+
+Create a local environment file from the example:
+
+```bash
+cp .env.example .env
+```
+
+The default values are ready for local development.
 
 ### Install Dependencies
 
@@ -212,7 +224,7 @@ pnpm test
 
 ## Roadmap
 
-- Add a real `RaspberryPiMetricsProvider`
+- Implement the real `RaspberryPiMetricsProvider`
 - Add dashboard tests
 - Improve chart controls and metric history views
 - Add service/project monitoring for future home-lab apps
