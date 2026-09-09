@@ -23,6 +23,16 @@ export function createApiServer({
       origin: dashboardOrigin
     }
   });
+  let metricsInterval: NodeJS.Timeout | undefined;
+
+  async function emitMetricsUpdate() {
+    try {
+      const metrics = await metricsProvider.getCurrentMetrics();
+      io.emit("metrics:update", SystemMetricsSchema.parse(metrics));
+    } catch {
+      io.emit("metrics:error", { message: "Unable to read metrics" });
+    }
+  }
 
   app.use(cors({ origin: dashboardOrigin }));
   app.use(express.json());
@@ -53,28 +63,24 @@ export function createApiServer({
     }
   });
 
-  const interval = setInterval(async () => {
-    try {
-      const metrics = await metricsProvider.getCurrentMetrics();
-      io.emit("metrics:update", SystemMetricsSchema.parse(metrics));
-    } catch {
-      io.emit("metrics:error", { message: "Unable to read metrics" });
-    }
-  }, metricsIntervalMs);
-
-  interval.unref();
-
   return {
     app,
     httpServer,
     io,
     start(port: number) {
+      metricsInterval ??= setInterval(emitMetricsUpdate, metricsIntervalMs);
+      metricsInterval.unref();
+
       httpServer.listen(port, () => {
         console.log(`PiLab API listening on http://localhost:${port}`);
       });
     },
     stop() {
-      clearInterval(interval);
+      if (metricsInterval) {
+        clearInterval(metricsInterval);
+        metricsInterval = undefined;
+      }
+
       io.close();
       httpServer.close();
     }
