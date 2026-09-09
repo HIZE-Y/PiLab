@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { SimulatedMetricsProvider } from "./metrics/SimulatedMetricsProvider.js";
 import { createApiServer } from "./server.js";
 
