@@ -9,7 +9,7 @@
     "build": "pnpm --filter @pilab/shared build && tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run --exclude \"dist/**\""
+    "test": "pnpm --filter @pilab/shared build && vitest run --exclude \"dist/**\""
   },
   "dependencies": {
     "@pilab/shared": "workspace:*",
