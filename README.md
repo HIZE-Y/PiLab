@@ -183,16 +183,20 @@ Run all development servers with local simulated metrics:
 ```bash
 pnpm dev
 # or
-pnpm dev:local
+pnpm local
 ```
 
-Run on the Raspberry Pi with real hardware metrics:
+Run on the Raspberry Pi with real hardware metrics using the hostname:
 
 ```bash
-pnpm dev:pi
+pnpm pi
 ```
 
-`pnpm dev:pie` is also available as an alias.
+Run on the Raspberry Pi with real hardware metrics using the current Pi IP address:
+
+```bash
+pnpm pi:ip
+```
 
 Run all tests:
 
