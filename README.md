@@ -212,6 +212,30 @@ Run only the dashboard:
 pnpm --filter @pilab/dashboard dev
 ```
 
+## Raspberry Pi Shutdown Button
+
+The dashboard can show a guarded shutdown button for the Raspberry Pi. It is disabled by default.
+
+To enable it in development, set this in `.env.pi`:
+
+```text
+ALLOW_SYSTEM_SHUTDOWN=true
+```
+
+The API runs this command when shutdown is requested:
+
+```bash
+sudo shutdown now
+```
+
+For the button to work from the PiLab service without an interactive password prompt, the Pi user needs passwordless permission for only that command. On the Pi, create a sudoers file with `sudo visudo -f /etc/sudoers.d/pilab-shutdown` and add:
+
+```text
+yahyahiza ALL=(root) NOPASSWD: /usr/sbin/shutdown, /sbin/shutdown
+```
+
+Keep this disabled unless the dashboard is only reachable on your trusted home network.
+
 ## Docker
 
 Docker files are included for the API and dashboard.

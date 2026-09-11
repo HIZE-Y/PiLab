@@ -1,4 +1,4 @@
-import { SystemMetricsSchema } from "@pilab/shared";
+import { SystemMetricsSchema, SystemStatusSchema } from "@pilab/shared";
 import type { SystemMetrics } from "@pilab/shared";
 import request from "supertest";
 import { describe, expect, it } from "vitest";
@@ -42,5 +42,33 @@ describe("createApiServer", () => {
     const response = await request(apiServer.app).get("/api/metrics").expect(200);
 
     expect(SystemMetricsSchema.parse(response.body)).toEqual(sampleMetrics);
+  });
+
+  it("reports shutdown as disabled by default", async () => {
+    const response = await request(apiServer.app).get("/api/system").expect(200);
+
+    expect(SystemStatusSchema.parse(response.body)).toEqual({
+      shutdownEnabled: false
+    });
+  });
+
+  it("rejects shutdown when shutdown is disabled", async () => {
+    await request(apiServer.app).post("/api/system/shutdown").expect(403);
+  });
+
+  it("runs the shutdown command when shutdown is enabled", async () => {
+    let shutdownRequested = false;
+    const enabledServer = createApiServer({
+      metricsProvider: new StaticMetricsProvider(),
+      dashboardOrigin: "http://localhost:5173",
+      allowSystemShutdown: true,
+      shutdownCommand: async () => {
+        shutdownRequested = true;
+      }
+    });
+
+    await request(enabledServer.app).post("/api/system/shutdown").expect(202);
+
+    expect(shutdownRequested).toBe(true);
   });
 });

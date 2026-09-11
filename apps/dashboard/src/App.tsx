@@ -1,5 +1,5 @@
 import type { SystemMetrics } from "@pilab/shared";
-import { SystemMetricsSchema } from "@pilab/shared";
+import { SystemMetricsSchema, SystemStatusSchema } from "@pilab/shared";
 import { useEffect, useMemo, useState } from "react";
 import {
   Area,
@@ -114,10 +114,33 @@ export function App() {
   const [history, setHistory] = useState<SystemMetrics[]>([]);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("connecting");
+  const [shutdownEnabled, setShutdownEnabled] = useState(false);
+  const [shutdownMessage, setShutdownMessage] = useState<string | null>(null);
+  const [isShutdownPending, setIsShutdownPending] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
+
+    async function loadSystemStatus() {
+      try {
+        const response = await fetch(`${apiUrl}/api/system`);
+
+        if (!response.ok) {
+          throw new Error(`System status request failed with ${response.status}`);
+        }
+
+        const systemStatus = SystemStatusSchema.parse(await response.json());
+
+        if (isMounted) {
+          setShutdownEnabled(systemStatus.shutdownEnabled);
+        }
+      } catch {
+        if (isMounted) {
+          setShutdownEnabled(false);
+        }
+      }
+    }
 
     async function loadInitialMetrics() {
       try {
@@ -142,6 +165,7 @@ export function App() {
       }
     }
 
+    void loadSystemStatus();
     void loadInitialMetrics();
 
     const socket = io(apiUrl, {
@@ -184,6 +208,36 @@ export function App() {
     [currentMetrics]
   );
 
+  async function requestShutdown() {
+    const confirmed = window.confirm(
+      "Shut down the Raspberry Pi now? PiLab will go offline until you power it back on."
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setIsShutdownPending(true);
+    setShutdownMessage(null);
+
+    try {
+      const response = await fetch(`${apiUrl}/api/system/shutdown`, {
+        method: "POST"
+      });
+
+      if (!response.ok) {
+        throw new Error(`Shutdown request failed with ${response.status}`);
+      }
+
+      setShutdownMessage("Shutdown requested. The Raspberry Pi will power off shortly.");
+    } catch (error) {
+      setShutdownMessage(
+        error instanceof Error ? error.message : "Unable to request shutdown"
+      );
+      setIsShutdownPending(false);
+    }
+  }
+
   const chartData = history.map((metrics) => ({
     time: new Date(metrics.timestamp).toLocaleTimeString([], {
       minute: "2-digit",
@@ -204,13 +258,26 @@ export function App() {
             Live simulated Raspberry Pi metrics today, ready for real Pi hardware later.
           </p>
         </div>
-        <div className={`status-pill status-${connectionStatus}`}>
-          <span aria-hidden="true" />
-          {connectionStatus}
+        <div className="hero-actions">
+          <div className={`status-pill status-${connectionStatus}`}>
+            <span aria-hidden="true" />
+            {connectionStatus}
+          </div>
+          {shutdownEnabled ? (
+            <button
+              className="shutdown-button"
+              disabled={isShutdownPending}
+              onClick={requestShutdown}
+              type="button"
+            >
+              {isShutdownPending ? "Shutdown requested" : "Shut down Pi"}
+            </button>
+          ) : null}
         </div>
       </section>
 
       {lastError ? <p className="error-banner">{lastError}</p> : null}
+      {shutdownMessage ? <p className="system-banner">{shutdownMessage}</p> : null}
 
       <section className="metric-grid" aria-label="Current system metrics">
         {currentMetrics ? (

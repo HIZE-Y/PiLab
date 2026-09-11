@@ -85,6 +85,15 @@ h2 {
   line-height: 1.6;
 }
 
+.hero-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .status-pill {
   display: inline-flex;
   flex: 0 0 auto;
@@ -119,13 +128,38 @@ h2 {
   box-shadow: 0 0 0 5px rgba(220, 38, 38, 0.14);
 }
 
-.error-banner {
+.shutdown-button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fff1f2;
+  color: #991b1b;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 800;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.shutdown-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.error-banner,
+.system-banner {
   padding: 14px 16px;
   border: 1px solid #fecaca;
   border-radius: 8px;
   background: #fff1f2;
   color: #991b1b;
   font-weight: 700;
+}
+
+.system-banner {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
 }
 
 .metric-grid {
@@ -233,7 +267,16 @@ h2 {
     align-items: stretch;
   }
 
-  .status-pill {
+  .hero-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.status-pill {
     width: fit-content;
   }
 

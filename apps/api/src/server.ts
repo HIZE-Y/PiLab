@@ -1,20 +1,34 @@
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import cors from "cors";
 import express from "express";
 import { createServer } from "node:http";
 import { Server as SocketServer } from "socket.io";
-import { SystemMetricsSchema } from "@pilab/shared";
+import { SystemMetricsSchema, SystemStatusSchema } from "@pilab/shared";
 import type { MetricsProvider } from "./metrics/MetricsProvider.js";
+
+const execFileAsync = promisify(execFile);
+
+type ShutdownCommand = () => Promise<void>;
 
 type CreateApiServerOptions = {
   metricsProvider: MetricsProvider;
   dashboardOrigin: string;
   metricsIntervalMs?: number;
+  allowSystemShutdown?: boolean;
+  shutdownCommand?: ShutdownCommand;
 };
+
+async function defaultShutdownCommand() {
+  await execFileAsync("sudo", ["shutdown", "now"]);
+}
 
 export function createApiServer({
   metricsProvider,
   dashboardOrigin,
-  metricsIntervalMs = 2000
+  metricsIntervalMs = 2000,
+  allowSystemShutdown = false,
+  shutdownCommand = defaultShutdownCommand
 }: CreateApiServerOptions) {
   const app = express();
   const httpServer = createServer(app);
@@ -43,6 +57,30 @@ export function createApiServer({
       service: "pilab-api",
       timestamp: new Date().toISOString()
     });
+  });
+
+  app.get("/api/system", (_request, response) => {
+    response.json(
+      SystemStatusSchema.parse({
+        shutdownEnabled: allowSystemShutdown
+      })
+    );
+  });
+
+  app.post("/api/system/shutdown", async (_request, response, next) => {
+    if (!allowSystemShutdown) {
+      response.status(403).json({
+        message: "System shutdown is disabled. Set ALLOW_SYSTEM_SHUTDOWN=true to enable it."
+      });
+      return;
+    }
+
+    try {
+      await shutdownCommand();
+      response.status(202).json({ message: "Shutdown requested" });
+    } catch (error) {
+      next(error);
+    }
   });
 
   app.get("/api/metrics", async (_request, response, next) => {
