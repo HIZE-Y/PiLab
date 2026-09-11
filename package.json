@@ -5,7 +5,10 @@
   "description": "PiLab home-lab monitoring platform for Raspberry Pi projects.",
   "packageManager": "pnpm@11.0.9",
   "scripts": {
-    "dev": "pnpm --parallel --filter @pilab/api --filter @pilab/dashboard dev",
+    "dev": "pnpm dev:local",
+    "dev:local": "DASHBOARD_ORIGIN=http://localhost:5173 VITE_API_URL=http://localhost:4000 METRICS_PROVIDER=simulated pnpm --parallel --filter @pilab/api --filter @pilab/dashboard dev",
+    "dev:pi": "DASHBOARD_ORIGIN=http://yahyapie.local:5173 VITE_API_URL=http://yahyapie.local:4000 METRICS_PROVIDER=raspberry-pi pnpm --parallel --filter @pilab/api --filter @pilab/dashboard dev",
+    "dev:pie": "pnpm dev:pi",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint"

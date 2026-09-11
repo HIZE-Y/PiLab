@@ -178,11 +178,21 @@ pnpm dev
 
 ## Scripts
 
-Run all development servers:
+Run all development servers with local simulated metrics:
 
 ```bash
 pnpm dev
+# or
+pnpm dev:local
 ```
+
+Run on the Raspberry Pi with real hardware metrics:
+
+```bash
+pnpm dev:pi
+```
+
+`pnpm dev:pie` is also available as an alias.
 
 Run all tests:
 
