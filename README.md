@@ -58,13 +58,13 @@ The current implementation is:
 SimulatedMetricsProvider
 ```
 
-It generates realistic fake Raspberry Pi metrics locally. The future hardware implementation is already represented in code as a placeholder:
+It generates realistic fake Raspberry Pi metrics locally. The real hardware implementation reads Linux/Raspberry Pi system files:
 
 ```text
 RaspberryPiMetricsProvider
 ```
 
-That placeholder intentionally throws for now because real Raspberry Pi system reads should be added only when the app is running on the Pi.
+Use `METRICS_PROVIDER=simulated` for local Mac development and `METRICS_PROVIDER=raspberry-pi` when running on the Raspberry Pi.
 
 Because the API depends on the `MetricsProvider` interface, the dashboard and REST endpoints do not need to change when the source changes from simulated data to real Raspberry Pi data.
 
@@ -156,6 +156,26 @@ http://localhost:4000/api/health
 http://localhost:4000/api/metrics
 ```
 
+### Run On Raspberry Pi
+
+When running from the Raspberry Pi and opening the dashboard from another computer, use the Pi hostname or IP address in the environment variables:
+
+```bash
+DASHBOARD_ORIGIN=http://yahyapie.local:5173 \
+VITE_API_URL=http://yahyapie.local:4000 \
+METRICS_PROVIDER=raspberry-pi \
+pnpm dev
+```
+
+If `.local` discovery is unreliable, use the Pi IP address instead:
+
+```bash
+DASHBOARD_ORIGIN=http://192.168.2.253:5173 \
+VITE_API_URL=http://192.168.2.253:4000 \
+METRICS_PROVIDER=raspberry-pi \
+pnpm dev
+```
+
 ## Scripts
 
 Run all development servers:
@@ -224,7 +244,7 @@ pnpm test
 
 ## Roadmap
 
-- Implement the real `RaspberryPiMetricsProvider`
+- Add service monitoring for hosted home-lab projects
 - Add dashboard tests
 - Improve chart controls and metric history views
 - Add service/project monitoring for future home-lab apps
