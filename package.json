@@ -6,14 +6,16 @@
   "packageManager": "pnpm@11.0.9",
   "scripts": {
     "dev": "pnpm local",
-    "local": "DASHBOARD_ORIGIN=http://localhost:5173 VITE_API_URL=http://localhost:4000 METRICS_PROVIDER=simulated pnpm --parallel --filter @pilab/api --filter @pilab/dashboard dev",
-    "pi": "DASHBOARD_ORIGIN=http://yahyapie.local:5173 VITE_API_URL=http://yahyapie.local:4000 METRICS_PROVIDER=raspberry-pi pnpm --parallel --filter @pilab/api --filter @pilab/dashboard dev",
-    "pi:ip": "DASHBOARD_ORIGIN=http://192.168.2.253:5173 VITE_API_URL=http://192.168.2.253:4000 METRICS_PROVIDER=raspberry-pi pnpm --parallel --filter @pilab/api --filter @pilab/dashboard dev",
+    "local": "dotenv -e .env.local -- pnpm --parallel --filter @pilab/api --filter @pilab/dashboard dev",
+    "pi": "dotenv -e .env.pi -- pnpm --parallel --filter @pilab/api --filter @pilab/dashboard dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint"
   },
   "engines": {
     "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^10.0.0"
   }
 }

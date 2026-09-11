@@ -122,13 +122,19 @@ The payload matches the shared `SystemMetrics` schema from `@pilab/shared`.
 
 ### Configure Environment
 
-Create a local environment file from the example:
+For local Mac development with simulated metrics:
 
 ```bash
-cp .env.example .env
+cp .env.local.example .env.local
 ```
 
-The default values are ready for local development.
+For Raspberry Pi development with real hardware metrics:
+
+```bash
+cp .env.pi.example .env.pi
+```
+
+If your Pi IP changes, update `.env.pi` and keep the scripts unchanged.
 
 ### Install Dependencies
 
@@ -158,22 +164,10 @@ http://localhost:4000/api/metrics
 
 ### Run On Raspberry Pi
 
-When running from the Raspberry Pi and opening the dashboard from another computer, use the Pi hostname or IP address in the environment variables:
+Create `.env.pi` first, then run:
 
 ```bash
-DASHBOARD_ORIGIN=http://yahyapie.local:5173 \
-VITE_API_URL=http://yahyapie.local:4000 \
-METRICS_PROVIDER=raspberry-pi \
-pnpm dev
-```
-
-If `.local` discovery is unreliable, use the Pi IP address instead:
-
-```bash
-DASHBOARD_ORIGIN=http://192.168.2.253:5173 \
-VITE_API_URL=http://192.168.2.253:4000 \
-METRICS_PROVIDER=raspberry-pi \
-pnpm dev
+pnpm pi
 ```
 
 ## Scripts
@@ -186,17 +180,13 @@ pnpm dev
 pnpm local
 ```
 
-Run on the Raspberry Pi with real hardware metrics using the hostname:
+Run on the Raspberry Pi with real hardware metrics:
 
 ```bash
 pnpm pi
 ```
 
-Run on the Raspberry Pi with real hardware metrics using the current Pi IP address:
-
-```bash
-pnpm pi:ip
-```
+`pnpm local` reads `.env.local`; `pnpm pi` reads `.env.pi`.
 
 Run all tests:
 
