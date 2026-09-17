@@ -38,6 +38,7 @@ The project is built as a small TypeScript monorepo with a backend API, a React 
 apps/
   api/          Backend API and metrics providers
   dashboard/    React dashboard
+  health-demo/  Small independent service for monitoring practice
 packages/
   shared/       Shared Zod schemas and TypeScript types
 ```
@@ -220,6 +221,12 @@ Run only the dashboard:
 ```bash
 pnpm --filter @pilab/dashboard dev
 ```
+
+## Health Demo
+
+Health Demo is a separate Node.js service used as a future target for PiLab monitoring. It exposes `GET /health` on port 4100 and returns its status, service name, uptime, and timestamp.
+
+Start it in development with `pnpm health:dev`. For a compiled run, use `pnpm build` followed by `pnpm health:start`. Check `http://localhost:4100/health`. Set `HEALTH_PORT` to choose another port.
 
 ## Raspberry Pi Shutdown Button
 

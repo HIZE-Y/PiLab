@@ -9,6 +9,8 @@
     "local": "dotenv -e .env.local -- pnpm --parallel --filter @pilab/api --filter @pilab/dashboard dev",
     "pi": "dotenv -e .env.pi -- pnpm --parallel --filter @pilab/api --filter @pilab/dashboard dev",
     "pi:prod": "NODE_ENV=production dotenv -e .env.pi -- node apps/api/dist/index.js",
+    "health:dev": "pnpm --filter @pilab/health-demo dev",
+    "health:start": "pnpm --filter @pilab/health-demo start",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint"
