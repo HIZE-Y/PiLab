@@ -9,6 +9,7 @@ const port = Number(process.env.API_PORT ?? 4000);
 const dashboardOrigin = process.env.DASHBOARD_ORIGIN ?? "http://localhost:5173";
 const metricsProviderName = process.env.METRICS_PROVIDER ?? "simulated";
 const allowSystemShutdown = process.env.ALLOW_SYSTEM_SHUTDOWN === "true";
+const healthDemoUrl = process.env.HEALTH_DEMO_URL ?? "http://127.0.0.1:4100/health";
 const dashboardDirectory =
   process.env.NODE_ENV === "production"
     ? fileURLToPath(new URL("../../dashboard/dist/", import.meta.url))
@@ -33,6 +34,7 @@ const server = createApiServer({
   metricsProvider,
   dashboardOrigin,
   dashboardDirectory,
+  healthDemoUrl,
   allowSystemShutdown
 });
 

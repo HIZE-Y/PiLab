@@ -4,7 +4,12 @@ import cors from "cors";
 import express from "express";
 import { createServer } from "node:http";
 import { Server as SocketServer } from "socket.io";
-import { SystemMetricsSchema, SystemStatusSchema } from "@pilab/shared";
+import {
+  HealthDemoResponseSchema,
+  ServicesResponseSchema,
+  SystemMetricsSchema,
+  SystemStatusSchema
+} from "@pilab/shared";
 import type { MetricsProvider } from "./metrics/MetricsProvider.js";
 
 const execFileAsync = promisify(execFile);
@@ -15,6 +20,8 @@ type CreateApiServerOptions = {
   metricsProvider: MetricsProvider;
   dashboardOrigin: string;
   dashboardDirectory?: string;
+  healthDemoUrl?: string;
+  serviceFetch?: typeof fetch;
   metricsIntervalMs?: number;
   allowSystemShutdown?: boolean;
   shutdownCommand?: ShutdownCommand;
@@ -28,6 +35,8 @@ export function createApiServer({
   metricsProvider,
   dashboardOrigin,
   dashboardDirectory,
+  healthDemoUrl = "http://127.0.0.1:4100/health",
+  serviceFetch = fetch,
   metricsIntervalMs = 2000,
   allowSystemShutdown = false,
   shutdownCommand = defaultShutdownCommand
@@ -92,6 +101,39 @@ export function createApiServer({
     } catch (error) {
       next(error);
     }
+  });
+
+  app.get("/api/services", async (_request, response) => {
+    let status: "online" | "offline" = "offline";
+    let uptimeSeconds: number | null = null;
+
+    try {
+      const healthResponse = await serviceFetch(healthDemoUrl, {
+        signal: AbortSignal.timeout(1500)
+      });
+
+      if (!healthResponse.ok) {
+        throw new Error(`Health Demo returned ${healthResponse.status}`);
+      }
+
+      const health = HealthDemoResponseSchema.parse(await healthResponse.json());
+      status = "online";
+      uptimeSeconds = health.uptimeSeconds;
+    } catch {
+      // A failed check is a service status, not an API failure.
+    }
+
+    response.json(
+      ServicesResponseSchema.parse({
+        services: [{
+          id: "health-demo",
+          name: "Health Demo",
+          status,
+          uptimeSeconds,
+          checkedAt: new Date().toISOString()
+        }]
+      })
+    );
   });
 
   if (dashboardDirectory) {

@@ -85,6 +85,26 @@ Example response:
 }
 ```
 
+### `GET /api/services`
+
+Checks Health Demo from the API and reports whether its `/health` endpoint is responding. The check times out after 1.5 seconds. Override the target with `HEALTH_DEMO_URL`; the default is `http://127.0.0.1:4100/health`.
+
+Example response:
+
+```json
+{
+  "services": [
+    {
+      "id": "health-demo",
+      "name": "Health Demo",
+      "status": "online",
+      "uptimeSeconds": 62,
+      "checkedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ]
+}
+```
+
 ### `GET /api/metrics`
 
 Returns the latest system metrics.
@@ -288,7 +308,7 @@ pnpm test
 
 ## Roadmap
 
-- Add service monitoring for hosted home-lab projects
+- Expand service monitoring to additional hosted home-lab projects
 - Add dashboard tests
 - Improve chart controls and metric history views
 - Add service/project monitoring for future home-lab apps

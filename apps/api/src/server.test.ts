@@ -1,4 +1,4 @@
-import { SystemMetricsSchema, SystemStatusSchema } from "@pilab/shared";
+import { ServicesResponseSchema, SystemMetricsSchema, SystemStatusSchema } from "@pilab/shared";
 import type { SystemMetrics } from "@pilab/shared";
 import request from "supertest";
 import { describe, expect, it } from "vitest";
@@ -42,6 +42,55 @@ describe("createApiServer", () => {
     const response = await request(apiServer.app).get("/api/metrics").expect(200);
 
     expect(SystemMetricsSchema.parse(response.body)).toEqual(sampleMetrics);
+  });
+
+  it("reports a healthy service", async () => {
+    const server = createApiServer({
+      metricsProvider: new StaticMetricsProvider(),
+      dashboardOrigin: "http://localhost:5173",
+      serviceFetch: async () => new Response(JSON.stringify({
+        status: "ok",
+        service: "health-demo",
+        uptimeSeconds: 62,
+        timestamp: "2026-01-01T00:00:00.000Z"
+      }), { status: 200 })
+    });
+
+    const response = await request(server.app).get("/api/services").expect(200);
+    const { services } = ServicesResponseSchema.parse(response.body);
+    expect(services[0]).toMatchObject({
+      id: "health-demo",
+      status: "online",
+      uptimeSeconds: 62
+    });
+  });
+
+  it("reports a stopped service as offline", async () => {
+    const server = createApiServer({
+      metricsProvider: new StaticMetricsProvider(),
+      dashboardOrigin: "http://localhost:5173",
+      serviceFetch: async () => { throw new Error("Connection refused"); }
+    });
+
+    const response = await request(server.app).get("/api/services").expect(200);
+    const { services } = ServicesResponseSchema.parse(response.body);
+    expect(services[0]).toMatchObject({
+      id: "health-demo",
+      status: "offline",
+      uptimeSeconds: null
+    });
+  });
+
+  it("reports an invalid health response as offline", async () => {
+    const server = createApiServer({
+      metricsProvider: new StaticMetricsProvider(),
+      dashboardOrigin: "http://localhost:5173",
+      serviceFetch: async () => new Response(JSON.stringify({ status: "ok" }), { status: 200 })
+    });
+
+    const response = await request(server.app).get("/api/services").expect(200);
+    const { services } = ServicesResponseSchema.parse(response.body);
+    expect(services[0].status).toBe("offline");
   });
 
   it("reports shutdown as disabled by default", async () => {

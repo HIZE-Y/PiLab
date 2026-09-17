@@ -1,5 +1,5 @@
-import type { SystemMetrics } from "@pilab/shared";
-import { SystemMetricsSchema, SystemStatusSchema } from "@pilab/shared";
+import type { ServiceStatus, SystemMetrics } from "@pilab/shared";
+import { ServicesResponseSchema, SystemMetricsSchema, SystemStatusSchema } from "@pilab/shared";
 import { useEffect, useMemo, useState } from "react";
 import {
   Area,
@@ -118,6 +118,8 @@ export function App() {
   const [shutdownMessage, setShutdownMessage] = useState<string | null>(null);
   const [isShutdownPending, setIsShutdownPending] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [serviceStatus, setServiceStatus] = useState<ServiceStatus | null>(null);
+  const [serviceRequestFailed, setServiceRequestFailed] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -200,6 +202,37 @@ export function App() {
     return () => {
       isMounted = false;
       socket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadServices() {
+      try {
+        const response = await fetch(`${apiUrl}/api/services`);
+        if (!response.ok) {
+          throw new Error(`Services request failed with ${response.status}`);
+        }
+
+        const { services } = ServicesResponseSchema.parse(await response.json());
+        if (isMounted) {
+          setServiceStatus(services[0] ?? null);
+          setServiceRequestFailed(false);
+        }
+      } catch {
+        if (isMounted) {
+          setServiceStatus(null);
+          setServiceRequestFailed(true);
+        }
+      }
+    }
+
+    void loadServices();
+    const interval = window.setInterval(loadServices, 5000);
+    return () => {
+      isMounted = false;
+      window.clearInterval(interval);
     };
   }, []);
 
@@ -293,6 +326,33 @@ export function App() {
         ) : (
           <p className="loading-state">Waiting for PiLab metrics...</p>
         )}
+      </section>
+
+      <section className="services-section" aria-label="Hosted services">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Services</p>
+            <h2>Hosted projects</h2>
+          </div>
+        </div>
+        <div className="service-row">
+          <div>
+            <strong>Health Demo</strong>
+            <p>
+              {serviceStatus?.status === "online" && serviceStatus.uptimeSeconds !== null
+                ? `Uptime ${formatUptime(serviceStatus.uptimeSeconds)}`
+                : serviceStatus?.status === "offline"
+                  ? "Health check failed"
+                  : serviceRequestFailed
+                    ? "PiLab could not load service status"
+                    : "Checking service..."}
+            </p>
+          </div>
+          <div className={`service-state service-${serviceStatus?.status ?? "unknown"}`}>
+            <span aria-hidden="true" />
+            {serviceStatus?.status ?? (serviceRequestFailed ? "Unavailable" : "Checking")}
+          </div>
+        </div>
       </section>
 
       <section className="chart-section" aria-label="Recent metric history">
