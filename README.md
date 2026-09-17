@@ -188,6 +188,15 @@ pnpm pi
 
 `pnpm local` reads `.env.local`; `pnpm pi` reads `.env.pi`.
 
+For a production run on the Pi, build first and then start the compiled app:
+
+```bash
+pnpm build
+pnpm pi:prod
+```
+
+The production dashboard and API share port 4000. Open `http://192.168.2.253:4000/` on the home network. Rebuild after each code update before restarting the service.
+
 Run all tests:
 
 ```bash

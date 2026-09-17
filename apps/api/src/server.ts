@@ -14,6 +14,7 @@ type ShutdownCommand = () => Promise<void>;
 type CreateApiServerOptions = {
   metricsProvider: MetricsProvider;
   dashboardOrigin: string;
+  dashboardDirectory?: string;
   metricsIntervalMs?: number;
   allowSystemShutdown?: boolean;
   shutdownCommand?: ShutdownCommand;
@@ -26,6 +27,7 @@ async function defaultShutdownCommand() {
 export function createApiServer({
   metricsProvider,
   dashboardOrigin,
+  dashboardDirectory,
   metricsIntervalMs = 2000,
   allowSystemShutdown = false,
   shutdownCommand = defaultShutdownCommand
@@ -91,6 +93,10 @@ export function createApiServer({
       next(error);
     }
   });
+
+  if (dashboardDirectory) {
+    app.use(express.static(dashboardDirectory));
+  }
 
   io.on("connection", async (socket) => {
     try {

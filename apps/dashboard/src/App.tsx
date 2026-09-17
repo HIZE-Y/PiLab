@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import { io } from "socket.io-client";
 
-const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+const apiUrl = import.meta.env.VITE_API_URL || window.location.origin;
 const maxHistoryLength = 30;
 
 type ConnectionStatus = "connecting" | "online" | "offline";
